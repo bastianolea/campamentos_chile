@@ -31,20 +31,18 @@ mapa_urbano <- mapa_zonas_urbanas |>
 
 
 # datos campamentos ----
-# # datos 2024 (sin coordenadas)
-# library(readr)
-# FL_Actualizaci_C3_B3n_Campamentos_2024 <- read_csv("datos/2024/FL_Actualizaci%C3%B3n_Campamentos_2024.csv")
-# View(FL_Actualizaci_C3_B3n_Campamentos_2024)
+# carga los datos de campamentos descargados
 
-geo <- read_sf("datos/2024/FL_Actualizaci%C3%B3n_Campamentos_2024.geojson")
+# geo <- read_sf("datos/2024/FL_Actualizaci%C3%B3n_Campamentos_2024.geojson")
+geo <- read_sf("datos/catastro_campamentos_2024.geojson")
 
+# limpiar datos y convertir polígonos a puntos
 campamentos_rm <- geo |> 
   janitor::clean_names() |> 
   filter(cut_r == 13) |> 
   select(nombre, cut_r, cut, comuna, n_hog, hectareas, geometry) |> 
-  # slice(1:10) |>
+  # crear puntos a partir de los polígonos
   mutate(punto = geometry |> st_simplify() |> st_centroid(of_largest_polygon = TRUE))
-
 
 campamentos_rm
 
@@ -55,8 +53,6 @@ st_crs(campamentos_rm$geometry) <- 4326
 
 campamentos_rm_2 <- campamentos_rm |> 
   st_intersection(mapa_urbano$geometry)
-
-
 
 # nombres de comunas para el mapa, que se repelan de los puntos del mapa
 etiquetas <- mapa_urbano |> 
